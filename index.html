@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title> Calendar</title>
+    <title> Template</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	  <!-- Favicon-->
@@ -21,6 +21,106 @@
       <!-- Custom stylesheet - for your changes--> 
 	       <script src="js/jquery-2.1.1.min.js"></script>
     <link rel="stylesheet" href="css/custom.css">
+	<script>
+	(function ($) {
+	$.fn.countTo = function (options) {
+		options = options || {};
+		
+		return $(this).each(function () {
+			// set options for current element
+			var settings = $.extend({}, $.fn.countTo.defaults, {
+				from:            $(this).data('from'),
+				to:              $(this).data('to'),
+				speed:           $(this).data('speed'),
+				refreshInterval: $(this).data('refresh-interval'),
+				decimals:        $(this).data('decimals')
+			}, options);
+			
+			// how many times to update the value, and how much to increment the value on each update
+			var loops = Math.ceil(settings.speed / settings.refreshInterval),
+				increment = (settings.to - settings.from) / loops;
+			
+			// references & variables that will change with each update
+			var self = this,
+				$self = $(this),
+				loopCount = 0,
+				value = settings.from,
+				data = $self.data('countTo') || {};
+			
+			$self.data('countTo', data);
+			
+			// if an existing interval can be found, clear it first
+			if (data.interval) {
+				clearInterval(data.interval);
+			}
+			data.interval = setInterval(updateTimer, settings.refreshInterval);
+			
+			// initialize the element with the starting value
+			render(value);
+			
+			function updateTimer() {
+				value += increment;
+				loopCount++;
+				
+				render(value);
+				
+				if (typeof(settings.onUpdate) == 'function') {
+					settings.onUpdate.call(self, value);
+				}
+				
+				if (loopCount >= loops) {
+					// remove the interval
+					$self.removeData('countTo');
+					clearInterval(data.interval);
+					value = settings.to;
+					
+					if (typeof(settings.onComplete) == 'function') {
+						settings.onComplete.call(self, value);
+					}
+				}
+			}
+			
+			function render(value) {
+				var formattedValue = settings.formatter.call(self, value, settings);
+				$self.html(formattedValue);
+			}
+		});
+	};
+	
+	$.fn.countTo.defaults = {
+		from: 0,               // the number the element should start at
+		to: 0,                 // the number the element should end at
+		speed: 1000,           // how long it should take to count between the target numbers
+		refreshInterval: 100,  // how often the element should be updated
+		decimals: 0,           // the number of decimal places to show
+		formatter: formatter,  // handler for formatting the value before rendering
+		onUpdate: null,        // callback method for every time the element is updated
+		onComplete: null       // callback method for when the element finishes updating
+	};
+	
+	function formatter(value, settings) {
+		return value.toFixed(settings.decimals);
+	}
+}(jQuery));
+
+jQuery(function ($) {
+  // custom formatting example
+  $('.timer count-title count-number').data('countToOptions', {
+	formatter: function (value, options) {
+	  return value.toFixed(options.decimals).replace(/\B(?=(?:\d{3})+(?!\d))/g, ',');
+	}
+  });
+  
+  // start all the timers
+  $('.timer').each(count);  
+  
+  function count(options) {
+	var $this = $(this);
+	options = $.extend({}, options || {}, $this.data('countToOptions') || {});
+	$this.countTo(options);
+  }
+});
+	</script>
   <script>
     <!-- calender script -->
 		$(document).ready(function() {
@@ -88,21 +188,21 @@
             },
 			allDaySlot: false,
 			selectHelper: true,
-			// select: function(start, end, allDay) {
-			// 	var title = prompt('Event Title:');
-			// 	if (title) {
-			// 		calendar.fullCalendar('renderEvent',
-			// 			{
-			// 				title: title,
-			// 				start: start,
-			// 				end: end,
-			// 				allDay: allDay
-			// 			},
-			// 			true // make the event "stick"
-			// 		);
-			// 	}
-			// 	calendar.fullCalendar('unselect');
-			// },
+			select: function(start, end, allDay) {
+			/*	var title = prompt('Event Title:');
+				if (title) {
+					calendar.fullCalendar('renderEvent',
+						{
+							title: title,
+							start: start,
+							end: end,
+							allDay: allDay
+						},
+						true // make the event "stick"
+					);
+				}*/
+				calendar.fullCalendar('unselect');
+			},
 			droppable: true, // this allows things to be dropped onto the calendar !!!
 			drop: function(date, allDay) { // this function is called when something is dropped
 			
@@ -192,11 +292,57 @@
 		</div>
 		
 		<div class="mainpanel">
-		
-		<div class="pageheader">
+		<div class="row margin0 topbg">
+	     <div class="col-sm-3 padding-r0">
+		      <div class="cardpart salonscart">
+			    <div class="cardiconpart">
+				 <i class="fa fa-building"></i>
+				</div>
+				<div class="cardpartcontent">
+				   <strong  class="timer count-title count-number" data-to="100" data-speed="1500">0</strong>
+				   <p>Salons</p>
+				</div>
+			  </div>
+		 </div>
+		 <div class="col-sm-3 padding-r0 ">
+		      <div class="cardpart servicecart">
+			    <div class="cardiconpart">
+				 <i class="fa fa-gift"></i>
+				</div>
+				<div class="cardpartcontent">
+				   <strong  class="timer count-title count-number" data-to="100" data-speed="1500">0</strong>
+				   <p>Services</p>
+				</div>
+			  </div>
+		 </div>
+		 <div class="col-sm-3 padding-r0">
+		      <div class="cardpart appointmentcart">
+			    <div class="cardiconpart">
+				 <i class="fa fa-shopping-cart"></i>
+				</div>
+				<div class="cardpartcontent">
+				   <strong  class="timer count-title count-number" data-to="100" data-speed="1500">0</strong>
+				   <p>Appointments</p>
+				</div>
+			  </div>
+		 </div>
+		 <div class="col-sm-3  ">
+		      <div class="cardpart ratingcart">
+			    <div class="cardiconpart">
+				 <i class="fa fa-star"></i>
+				</div>
+				<div class="cardpartcontent">
+				   <strong class="timer count-title count-number" data-to="100" data-speed="1500">0</strong>
+				   <p>Reviews Rating</p>
+				</div>
+			  </div>
+		 </div>
+		 
+	</div>	
+		<!-- <div class="pageheader">
 		    <h1>Calendar</h1>
 			
-		</div>
+		</div> -->
 		
 		<section class="calender-section">
 		     
@@ -322,7 +468,7 @@
 						    <td><span class="slotno">19 Jan 2020</span></td>
 						    <td><span class="slotno" style="color:#A9A9A9">10AM - 11AM</span></td>
 						    <td><label class="slidetoogle">
-  <input type="checkbox">
+  <input type="checkbox" onchange="blockuser()">
   <span class="slider round"></span>
 </label></td>
 						 </tr>
@@ -338,7 +484,7 @@
 						    <td><span class="slotno">19 Jan 2020</span></td>
 						    <td><span class="slotno" style="color:#fa7404">12PM - 1PM</span></td>
 						    <td><label class="slidetoogle">
-  <input type="checkbox">
+  <input type="checkbox" onchange="blockuser()">
   <span class="slider round"></span>
 </label></td>
 						 </tr>
@@ -354,7 +500,7 @@
 						    <td><span class="slotno">19 Jan 2020</span></td>
 						    <td><span class="slotno" style="color:#22fa04">10AM - 11AM</span></td>
 						    <td><label class="slidetoogle">
-  <input type="checkbox">
+  <input type="checkbox" onchange="blockuser()">
   <span class="slider round"></span>
 </label></td>
 						 </tr>
@@ -362,7 +508,7 @@
 						    <td><span class="slotno">19 Jan 2020</span></td>
 						    <td><span class="slotno">10AM - 11AM</span></td>
 						    <td><label class="slidetoogle">
-  <input type="checkbox">
+  <input type="checkbox" onchange="blockuser()">
   <span class="slider round"></span>
 </label></td>
 						 </tr>
@@ -374,12 +520,21 @@
 				 </div>
 			 </div>
 			 <div class="clearfix"></div>
+			 <ul class="statuscolorlist">
+                   <li><span class="statuscolor" style="background:#fa2204">&nbsp;</span> <span class="statustxt">Pending</span></li>
+                   <li><span class="statuscolor" style="background:#A9A9A9">&nbsp;</span> <span class="statustxt">Completed</span></li>
+                   <li><span class="statuscolor" style="background:#8B4513">&nbsp;</span> <span class="statustxt">Missed</span></li>
+                   <li><span class="statuscolor" style="background:#0492fa">&nbsp;</span> <span class="statustxt">Initiated</span></li>
+                   <li><span class="statuscolor" style="background:#fa7404">&nbsp;</span> <span class="statustxt">Cancelled</span></li>
+                   <li><span class="statuscolor" style="background:#22fa04">&nbsp;</span> <span class="statustxt">Confirmed</span></li>
+                   <li><span class="statuscolor" style="background:#ff33c4">&nbsp;</span> <span class="statustxt">Denied</span></li>
+			 </ul>
+			 <div class="clearfix"></div>
 			 <div class="tabsconentpart">
 			  <ul class="nav nav-tabs custom-calendertab  ">
 				  <li class="active"><a data-toggle="tab" href="#personaltask">Personal Task</a></li>
 				  <li ><a data-toggle="tab" href="#rebook">Rebook</a></li>
-				  <li><a data-toggle="tab" href="#waitinglist">Waiting List</a></li>
-				  <li><a data-toggle="tab" href="#history">History</a></li>
+				  <li><a data-toggle="tab" href="#waitinglist">Waiting List</a></li> 
 				</ul>
 
 				<div class="tab-content ">
@@ -395,6 +550,8 @@
 						       <th>Repeat </th>
 						       <th>Comments </th>
 						       <th>Working Hours  </th>
+						       <th>Online booking date  </th>
+						       <th>OFF day  </th>
 						       <th> Action </th>
 						  </tr>
 					  </thead>
@@ -408,6 +565,8 @@
 <td> Yes</td>
 <td>Comments </td>
 <td>24/7 Hours </td>
+<td>20-5-20 To 25-5-20 </td>
+<td>18-5-20</td> 
 <td> <i class="fa fa-edit btn-common btn btn-sm" data-toggle="modal" data-target="#addtask"></i> <i class="fa fa-trash btn-common btn btn-sm"></i></td>
 						  </tr>
 						 
@@ -437,51 +596,26 @@
 					<table class="table table-bordered table-stripted">
 					  <thead>
 					      <tr>
-						       <th>Customer Name</th>
-						       <th>Address </th>
+						       <th>Customer Name</th> 
 							     <th>Service Name </th> 
 							     <th>Service Provider </th> 
-						       <th>Date & Time</th> 
+						       <th>Date </th> 
+						       <th>Time</th> 
+						       <th>Action</th> 
 						     
 						  </tr>
 					  </thead>
 					  <tbody>
 					      <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
+						     <td>Jone</td> 
 						     <td>Cutting</td>
 						     <td>Sumith</td>
 						     <td>12 Jan 2020</td>  
+						     <td>10:00 AM</td> 
+<td> <i class="fa fa-edit btn-common btn btn-sm" data-toggle="modal" data-target="#waitinglistedit"></i> <i class="fa fa-trash btn-common btn btn-sm"></i></td>
+							 
 						  </tr>
-						  <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>  
-						  </tr>
-						  <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>  
-						  </tr>
-						  <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>  
-						  </tr>
-						  <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>  
-						  </tr>
-						  
+						 
 						  
 					    </tbody>
 					</table>
@@ -506,90 +640,7 @@
 </nav>
 				 
 				  </div>
-				  <div id="history" class="tab-pane fade">
-					<table class="table table-bordered table-stripted">
-					  <thead>
-					      <tr>
-						       <th>Customer Name</th>
-						       <th>Address </th>
-							     <th>Service Name </th> 
-							     <th>Service Provider </th> 
-						       <th>Appointment Date & Time</th>
-						       <th>Amount </th> 
-						       <th>Payment Method </th> 
-						     
-						  </tr>
-					  </thead>
-					  <tbody>
-					      <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>
-						     <td> $20</td>
-						     <td> Cash</td> 
-						  </tr>
-						  <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>
-						     <td> $20</td>
-						     <td> Cash</td> 
-						  </tr> 
-						  <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>
-						     <td> $20</td>
-						     <td> Cash</td> 
-						  </tr>
-						  <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>
-						     <td> $20</td>
-						     <td> Cash</td> 
-						  </tr>
-						  <tr>
-						     <td>Jone</td>
-						     <td>Mohali</td>
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>
-						     <td> $20</td>
-						     <td> Cash</td> 
-						  </tr>
-						  
-						  
-					    </tbody>
-					</table>
-					<nav aria-label="Page navigation " class="calenderpagination">
-  <ul class="pagination pull-right">
-    <li>
-      <a href="#" aria-label="Previous">
-        <span aria-hidden="true">&laquo;</span>
-      </a>
-    </li>
-    <li><a href="#">1</a></li>
-    <li><a href="#">2</a></li>
-    <li><a href="#">3</a></li>
-    <li><a href="#">4</a></li>
-    <li><a href="#">5</a></li>
-    <li>
-      <a href="#" aria-label="Next">
-        <span aria-hidden="true">&raquo;</span>
-      </a>
-    </li>
-  </ul>
-</nav>
-				  </div>
+				
 				    <div id="rebook" class="tab-pane fade">
 					<button type="button" class="btn custom-btn mv-10 btn-sm" data-toggle="modal" data-target="#addrebook"><i class="fa fa-plus"></i> Add Rebook</button>
 
@@ -599,8 +650,9 @@
 						       <th>Customer Name</th> 
 							     <th>Service Name </th> 
 							     <th>Service Staff </th> 
-						       <th> Date </th>
-						       <th>Time </th>   
+						       <th>Appointment Date </th>
+						       <th>Appointment Time </th>   
+						       <th>Action </th>   
 						     
 						  </tr>
 					  </thead>
@@ -611,36 +663,9 @@
 						     <td>Sumith</td>
 						     <td>12 Jan 2020</td>
 						     <td> 12:05 AM</td> 
+						     <td> <i class="fa fa-edit btn btn-sm btn-common" data-toggle="modal" data-target="#addrebook"></i> <i class="fa fa-trash btn btn-sm btn-common" onclick="deletedata()"></i></td> 
 						  </tr>
-						   <tr>
-						     <td>Jone</td> 
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>
-						     <td> 12:05 AM</td> 
-						  </tr>
-						   <tr>
-						     <td>Jone</td> 
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>
-						     <td> 12:05 AM</td> 
-						  </tr>
-						   <tr>
-						     <td>Jone</td> 
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>
-						     <td> 12:05 AM</td> 
-						  </tr>
-						   <tr>
-						     <td>Jone</td> 
-						     <td>Cutting</td>
-						     <td>Sumith</td>
-						     <td>12 Jan 2020</td>
-						     <td> 12:05 AM</td> 
-						  </tr>
-						 
+						  
 					    </tbody>
 					</table>
 					<nav aria-label="Page navigation " class="calenderpagination">
@@ -671,7 +696,7 @@
 		</div> 
 		<!-- appointment modal -->
 		<div id="appointmentmodal" class="modal fade custommodal" role="dialog">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg extralarge">
 
     <!-- Modal content-->
     <div class="modal-content">
@@ -685,6 +710,7 @@
 				  <li><a data-toggle="tab" href="#appointmenttimeline">Appointment Timeline</a></li>
 				  <li><a data-toggle="tab" href="#customeredit">Customer Edit</a></li>
 				  <li><a data-toggle="tab" href="#notetab">Note</a></li>
+				  <li><a data-toggle="tab" href="#historytab">History</a></li>
 				   
 				  </ul>
 				  	<div class="tab-content ">
@@ -703,10 +729,17 @@
 							
 								<div class="col-sm-4">
 								    <div class="form-group">
-									     <label>Date</label>
+									     <label>Appointment  Date</label>
 										 <input type="text" class="form-control" placeholder=" " id="servicedate">
 									</div>
 								</div>
+								<div class="col-sm-4">
+								    <div class="form-group">
+									     <label>Appointment  Time</label>
+										 <input type="text" class="form-control" placeholder=" " id="servicetime">
+									</div>
+								</div>
+								
 								<div class="col-sm-4">
 								    <div class="form-group">
 									     <label>Enter Price </label>
@@ -732,7 +765,7 @@
 								</div> 
 									<div class="col-sm-4">
 								    <div class="form-group">
-									     <label>Note</label>
+									     <label>Appointment Note</label>
 										 <textarea class="form-control" placeholder="Note" style="resize:none;"></textarea>
 									</div>
 								</div>
@@ -864,10 +897,23 @@
 		   <input type="text" class="form-control" placeholder=" ">
 		 </div>
 					  </div>
+					  <div class="col-sm-4">
+					    <div class="form-group">
+						<label>Time of Appointment Creation </label>
+		   <input type="text" class="form-control" placeholder=" ">
+		 </div>
+					  </div>
+					  
 				   <div class="col-sm-4">
 					    <div class="form-group">
-						<label>Appointment Date and Time </label>
-		   <input type="text" class="form-control" placeholder="" id="appointmentdatetime">
+						<label>Appointment Date</label>
+		   <input type="text" class="form-control" placeholder="" id="appointmenttimelinedate">
+		 </div>
+					  </div> 
+					  <div class="col-sm-4">
+					    <div class="form-group">
+						<label>Appointment Time </label>
+		   <input type="text" class="form-control" placeholder="" id="appointmenttimelinetime">
 		 </div>
 					  </div>
 				    <div class="col-sm-4">
@@ -982,12 +1028,66 @@
 						  </div>
 						 </div>
 						 <div class="col-sm-2 " style="padding-top:50px;">
-						      <i class="fa fa-edit btn-common btn btn-sm"></i>
-						      <i class="fa fa-trash btn-common btn btn-sm"></i>
+						      <i class="fa fa-edit btn-common btn btn-sm" onclick="updatenote()"></i>
+						      <i class="fa fa-trash btn-common btn btn-sm" onclick="deletedata()"></i>
+							  <div class="clearfix"></div>
+						  <button type="button" class="btn btn-sm btn-common mt-10" id="updatenote" style="display:none">Update</button>
 						 </div>
 					   </div>
 				   </div>
-	 
+	   <div id="historytab" class="tab-pane fade">
+					<table class="table table-bordered table-stripted">
+					  <thead>
+					      <tr>
+						       <th>Customer Name</th>
+						       
+							     <th>Service Name </th> 
+							     <th>Service Provider </th> 
+						       <th>Appointment Date  </th>
+							   <th>Appointment Time</th>
+							   <th>Appointment Status</th>
+						       <th>Amount </th> 
+						       <th>Payment Method </th> 
+						       <th>Action </th> 
+						     
+						  </tr>
+					  </thead>
+					  <tbody>
+					      <tr>
+						     <td>Jone</td> 
+						     <td>Cutting</td>
+						     <td>Sumith</td>
+						     <td>12 Jan 2020</td>
+						     <td>23:00 PM</td>
+						     <td> Cancelled</td>
+						     <td> $20</td>
+						     <td> Cash</td> 
+						     <td> <i class="fa fa-trash btn btn-common btn-sm" onclick="deletedata()"></i>  <i class="fa fa-print btn btn-common btn-sm" ></i></td> 
+						  </tr>
+						  
+						  
+					    </tbody>
+					</table>
+					<nav aria-label="Page navigation " class="calenderpagination">
+  <ul class="pagination pull-right">
+    <li>
+      <a href="#" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li><a href="#">1</a></li>
+    <li><a href="#">2</a></li>
+    <li><a href="#">3</a></li>
+    <li><a href="#">4</a></li>
+    <li><a href="#">5</a></li>
+    <li>
+      <a href="#" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+				  </div>
       </div>
       <div class="clearfix"></div>
     </div>
@@ -1007,6 +1107,8 @@
       </div>
       <div class="modal-body">
 	  <div class="row">
+	 
+	  
 	    <div class="col-sm-4">
 		<div class="form-group">
 		   <label>Task Name</label>
@@ -1022,11 +1124,23 @@
 		</div>
 		<div class="col-sm-4">
 		<div class="form-group">
+		<label>Date & Time to block online booking</label>
+		   <input type="text" class="form-control" id="onlinebooking">
+		</div>
+		</div>
+		<div class="col-sm-4">
+		<div class="form-group">
+		<label>Select specific day to be OFF</label>
+		   <input type="text" class="form-control" id="offdate">
+		</div>
+		</div>
+		<div class="col-sm-4">
+		<div class="form-group">
 		<label>Working Hours</label>
 		   <input type="text" class="form-control">
 		</div>
 		</div>
-		<div class="col-sm-4">
+		 <div class="col-sm-4">
 		<div class="form-group">
 		<label>Block Online Booking</label>
 		  <label class="slidetoogle">
@@ -1053,6 +1167,7 @@
 </label>
 		</div>
 		</div>
+		
 	  </div>
 	   
        
@@ -1105,13 +1220,13 @@
 					  
 		<div class="col-sm-4">
 		<div class="form-group">
-		<label>Select Date </label>
+		<label>Select Appointment Date </label>
 		   <input type="text" class="form-control" id="rebookdate">
 		</div>
 		</div>
 		<div class="col-sm-4">
 		<div class="form-group">
-		<label>Select Time </label>
+		<label>Select Appointment Time </label>
 		   <input type="text" class="form-control" id="rebooktime">
 		</div>
 		</div> 
@@ -1128,8 +1243,72 @@
   </div>
 </div>	  <!--end rebook modal--->
 		
+		<div id="waitinglistedit" class="modal fade custommodal" role="dialog">
+  <div class="modal-dialog modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Edit Waiting List</h4>
+      </div>
+      <div class="modal-body">
+	  <div class="row">
+	   <div class="col-sm-4">
+					    <div class="form-group">
+						<label>Select Customer </label>
+		   <select class="form-control">
+			    <option>John</option>
+			    <option>Smith</option>  
+			</select>
+		 </div>
+					  </div>
+					  <div class="col-sm-4">
+					    <div class="form-group">
+						<label>Select Service  </label>
+		   <select class="form-control">
+			    <option>Cutting</option>  
+			</select>
+		 </div>
+					  </div>
+					  <div class="col-sm-4">
+					    <div class="form-group">
+						<label>Select Service Provider  </label>
+		   <select class="form-control">
+			    <option>John Doe</option>
+			    <option>Smith</option>  
+			</select>
+		 </div>
+					  </div>
+					  
+					  
+		<div class="col-sm-4">
+		<div class="form-group">
+		<label>  Date </label>
+		   <input type="text" class="form-control" id="waitingdate">
+		</div>
+		</div>
+		<div class="col-sm-4">
+		<div class="form-group">
+		<label>  Time </label>
+		   <input type="text" class="form-control" id="waitingtime">
+		</div>
+		</div> 
+	 
+	  </div>
+	   
+       
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-common" >Add</button>
+      </div>
+    </div>
+
+  </div>
+</div>	  <!--end rebook modal--->
 		
 		
+<!-- <input type="text" id="ssd" name="datetimes" />		 -->
 		
     <!-- JavaScript files-->
 
@@ -1141,18 +1320,78 @@
  	 <script src="js/sweetalert.min.js"></script>
 	
 	 <script src="js/bootsnip-calender.js"></script>
-	
+	<script type="text/javascript" src="js/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/daterangepicker.css" />
 	<script type="text/javascript">
+	$(function() {
+  $('#offdate').daterangepicker({
+    timePicker: true,
+    startDate: moment().startOf('hour'),
+    endDate: moment().startOf('hour').add(32, 'hour'),
+    locale: {
+      format: 'M/DD hh:mm A'
+    }
+  });
+  $('#onlinebooking').daterangepicker({
+    timePicker: true,
+    startDate: moment().startOf('hour'),
+    endDate: moment().startOf('hour').add(32, 'hour'),
+    locale: {
+      format: 'M/DD hh:mm A'
+    }
+  });
+});
 	
 	
+	function updatenote(){
+	  $('#updatenote').toggle();
+	}
 	
 	
-	
-	
-	function addtowaitinglist(){
+	function deletedata(){
+	 swal({
+		title: "Confirmation",
+		text: 'Are you sure this permanently delete this data',
+		 buttons:{
+			cancel:true,
+			confirm:'Yes'
+		 }
+	}).then( val=>{
+		 if(val){
+		 swal({
+		  title:'Thanks!',
+		 text:'You Clicked Yes',
+		 icon:'success'
+		 });
+		
+		 }
+	 
+	});
+ }
+ function addtowaitinglist(){
 	 swal({
 		title: "Confirmation",
 		text: 'Are you confirm to add in waiting list',
+		 buttons:{
+			cancel:true,
+			confirm:'Yes'
+		 }
+	}).then( val=>{
+		 if(val){
+		 swal({
+		  title:'Thanks!',
+		 text:'You Clicked Yes',
+		 icon:'success'
+		 });
+		
+		 }
+	 
+	});
+ }
+ function blockuser(){
+	 swal({
+		title: "Confirmation",
+		text: 'Are you sure to block this slot',
 		 buttons:{
 			cancel:true,
 			confirm:'Yes'

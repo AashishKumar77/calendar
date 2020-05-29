@@ -16,12 +16,44 @@ header{    background-color: #f44066;
 }
 .mainpanel {
     margin-left: 250px;
-    min-height: 772px;
+min-height: 772px;
 }
+.topbg{background:#fbfbfb;}
+.cardpart {
+    display: flex;background:#fff;border: 1px solid #eee;
+    padding: 10px;margin-top:14px;
+}
+.padding-r0{padding-right:0px;}
+.margin0{margin:0px;}
+.cardpartcontent strong {
+    font-size: 30px;
+    color: #666;
+    font-weight: 600;
+}
+.cardpartcontent p {
+    font-size: 16px;margin-bottom:0px;color:#98a6ad;
+}
+.cardpart .cardpartcontent {
+    float: right;
+    width: 70%;
+    text-align: right;
+}
+.cardiconpart .fa {
+    padding: 14px;
+    background: #603cba;
+    border-radius: 3px;
+    font-size: 35px;
+    color: #fff;
+}
+.salonscart .fa{background:#603cba;}
+.servicecart .fa{background:#28A9E3;}
+.appointmentcart .fa{background:#28B779;}
+.ratingcart .fa{background:#FFB94A;}
 .mainwrapper {
     position: relative;
     top: 0px;
 }
+.mt-10{margin-top:10px;}
 .pageheader {
     padding: 13px 20px 11px;
     border-bottom: 1px solid #eee;
@@ -29,7 +61,11 @@ header{    background-color: #f44066;
     -webkit-box-shadow: 0 2px 3px rgba(0,0,0,0.03);
     box-shadow: 0 2px 3px rgba(0,0,0,0.03);
 }
-
+.extralarge{width:1200px;}
+.statuscolorlist{padding:13px;margin-top:10px;margin-bottom:0px;}
+.statuscolorlist li {display:inline-block;margin-right:40px;}
+.statuscolorlist li .statuscolor{width:17px; height:17px; border-radius:40px;display:inline-block;margin-right:8px;background:#ccc;}
+.statuscolorlist li .statustxt{font-size:16px; font-weight:600;}
 .dategroup .input-group-addon{font-size:20px;}
 .filterpart{margin-top:20px;    padding-bottom: 20px;
     border-bottom: 1px solid #ddd;}
